@@ -1,0 +1,38 @@
+{
+  "name": "@shey/opencode-limits",
+  "version": "0.1.0",
+  "description": "Minimal OpenCode V2 /limits plugin for OpenCode Go, Claude, OpenAI/Codex, Copilot, Google, and API-key quota providers.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./tui": {
+      "types": "./dist/tui.d.ts",
+      "default": "./dist/tui.js"
+    }
+  },
+  "peerDependencies": {
+    "@opencode/plugin": ">=2.2.5",
+    "@opentui/core": ">=0.8.0",
+    "@opentui/solid": ">=0.8.0",
+    "solid-js": ">=1.9.0"
+  },
+  "peerDependenciesMeta": {
+    "@opentui/core": {
+      "optional": true
+    },
+    "@opentui/solid": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    }
+  }
+}

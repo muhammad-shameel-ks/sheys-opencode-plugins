@@ -1,0 +1,21 @@
+{
+  "name": "sheys-opencode-plugins",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "plugins/*"
+  ],
+  "scripts": {
+    "build": "tsc -b plugins/limits",
+    "typecheck": "tsc -b --noEmit plugins/limits",
+    "test": "node --test plugins/limits/test/*.test.ts"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "^2.2.5",
+    "@opentui/core": "^0.8.0",
+    "@opentui/solid": "^0.8.0",
+    "@types/node": "^24.0.0",
+    "solid-js": "^1.9.0",
+    "typescript": "^5.8.3"
+  }
+}
