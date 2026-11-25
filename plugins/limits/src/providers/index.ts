@@ -1,4 +1,5 @@
 import type { LimitsPluginOptions, LimitsSnapshot, ProviderLimits } from "../types.js";
+import { fetchAntigravityAgent } from "./antigravity-cli.js";
 import { fetchAnthropic } from "./anthropic.js";
 import { API_KEY_PROVIDERS } from "./api-key-vendors.js";
 import { fetchCopilot } from "./copilot.js";
@@ -14,6 +15,7 @@ export const ALL_PROVIDERS: readonly QuotaProvider[] = [
   { id: "openai", name: "OpenAI / Codex", fetch: fetchOpenAI },
   { id: "copilot", name: "GitHub Copilot", fetch: fetchCopilot },
   { id: "google-agy", name: "Google AGY", fetch: fetchGoogleAgy },
+  { id: "antigravity-agent", name: "Antigravity (agy)", fetch: fetchAntigravityAgent },
   { id: "google-gemini-cli", name: "Gemini CLI", fetch: fetchGoogleGeminiCli },
   { id: "opencode-zen", name: "OpenCode Zen", fetch: fetchOpenCodeZen },
   ...API_KEY_PROVIDERS,

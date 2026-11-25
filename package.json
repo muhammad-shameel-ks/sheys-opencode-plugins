@@ -6,9 +6,9 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "tsc -b plugins/limits",
-    "typecheck": "tsc -b --noEmit plugins/limits",
-    "test": "node --test plugins/limits/test/*.test.ts"
+    "build": "tsc -b plugins/limits plugins/antigravity-agent",
+    "typecheck": "tsc -b --noEmit plugins/limits plugins/antigravity-agent",
+    "test": "node --test plugins/*/test/*.test.ts"
   },
   "devDependencies": {
     "@opencode/plugin": "^2.2.5",

@@ -10,6 +10,7 @@ import {
   parseOllamaCloudResponse,
   parseOpenRouterResponse,
 } from "../dist/providers/api-key-vendors.js";
+import { fetchAntigravityAgent, parseAgyUsageOutput } from "../dist/providers/antigravity-cli.js";
 import { parseCopilotUserResponse } from "../dist/providers/copilot.js";
 import { parseAgyQuotaResponse, parseGeminiCliQuotaResponse } from "../dist/providers/google.js";
 import { collectLimitsSnapshot } from "../dist/providers/index.js";
@@ -134,6 +135,53 @@ test("Google AGY and Gemini CLI parsers convert remainingFraction to percentUsed
   assert.ok("rows" in gemini);
   assert.equal(gemini.rows[0].label, "Gemini Pro");
   assert.equal(gemini.rows[0].percentUsed, 10);
+});
+
+test("Antigravity agy /usage parser and fetcher", async () => {
+  const output = [
+    "Gemini Models\tWeekly Limit Remaining\t74%\t2026-12-02T04:17:14Z",
+    "Gemini Models\tFive Hour Limit Remaining\t98%\t2026-11-25T14:17:14Z",
+    "Claude and GPT models\tWeekly Limit Remaining\t82%\t2026-12-02T07:30:10Z",
+    "Claude and GPT models\tFive Hour Limit Remaining\t64%\t2026-11-25T12:30:10Z",
+  ].join("\n");
+  const parsed = parseAgyUsageOutput(output);
+  assert.ok("rows" in parsed);
+  assert.deepEqual(
+    parsed.rows.map((r) => [r.label, r.percentUsed]),
+    [
+      ["Gemini Weekly", 26],
+      ["Gemini 5h", 2],
+      ["Claude/GPT Weekly", 18],
+      ["Claude/GPT 5h", 36],
+    ],
+  );
+  assert.equal(parsed.rows[1].resetsAt, "2026-11-25T14:17:14.000Z");
+
+  assert.ok("error" in parseAgyUsageOutput("garbage without tabs\nfoo\tbar\tbaz"));
+  assert.deepEqual(parseAgyUsageOutput("  \n"), { error: "Empty agy /usage output" });
+
+  const cache = new ProviderLimitsCache();
+  const ctx = {} as Parameters<typeof collectLimitsSnapshot>[0]["ctx"];
+  const ok = await fetchAntigravityAgent({ ctx, cache, execImpl: async () => output });
+  assert.equal(ok?.status, "ok");
+  assert.equal(ok?.rows.length, 4);
+  const missing = await fetchAntigravityAgent({
+    ctx,
+    cache,
+    execImpl: async () => {
+      throw Object.assign(new Error("nope"), { code: "ENOENT" });
+    },
+  });
+  assert.equal(missing, undefined);
+  const failed = await fetchAntigravityAgent({
+    ctx,
+    cache,
+    execImpl: async () => {
+      throw Object.assign(new Error("secret-token"), { code: 1 });
+    },
+  });
+  assert.equal(failed?.status, "error");
+  assert.ok(!failed?.error?.includes("secret"));
 });
 
 test("Tier 2 API-key vendor parsers handle expected JSON shapes", () => {
@@ -272,7 +320,14 @@ test("collectLimitsSnapshot auto-detects configured providers and filters cleanl
 
   const cache = new ProviderLimitsCache();
   const snapshot = await collectLimitsSnapshot(
-    { ctx: fakeCtx, cache, fetchImpl: fakeFetch },
+    {
+      ctx: fakeCtx,
+      cache,
+      fetchImpl: fakeFetch,
+      execImpl: async () => {
+        throw Object.assign(new Error("not found"), { code: "ENOENT" });
+      },
+    },
     { pluginOptions: { exclude: ["opencode-zen"] } },
   );
 
