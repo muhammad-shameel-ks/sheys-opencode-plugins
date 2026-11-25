@@ -1,0 +1,31 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Node >= 23.6 strips TypeScript types by default, which is what
+          # `node --test plugins/*/test/*.test.ts` relies on.
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # The tests import from each plugin's dist/, so the build has to run first.
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
