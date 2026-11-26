@@ -25,7 +25,11 @@ function selectProviders(options?: LimitsPluginOptions): readonly QuotaProvider[
   const include = options?.include ? new Set(options.include) : undefined;
   const exclude = options?.exclude ? new Set(options.exclude) : undefined;
 
+  // The Antigravity Agent provider is disabled by default, so its quota row is hidden unless it is enabled.
+  const agyEnabled = process.env.OPENCODE_AGY_ENABLE === "1";
+
   return ALL_PROVIDERS.filter((provider) => {
+    if (provider.id === "antigravity-agent" && !agyEnabled) return false;
     if (include && !include.has(provider.id)) return false;
     if (exclude && exclude.has(provider.id)) return false;
     return true;
